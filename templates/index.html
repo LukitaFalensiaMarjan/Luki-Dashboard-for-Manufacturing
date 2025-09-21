@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard AI Manufaktur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-robot me-2"></i>LukiAI Dashboard For Manufaktur
+            </a>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="hero-section text-center rounded mb-5">
+            <h1>Analisis Cerdas untuk Industri Manufaktur</h1>
+            <p class="lead text-muted">Memanfaatkan kekuatan AI untuk Predictive Maintenance, Demand Forecasting, Supply Chain, Inventory, & Quality Control.</p>
+        </div>
+
+        <ul class="nav nav-tabs nav-fill mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'maintenance' or not active_tab %}active{% endif %}" id="maintenance-tab" data-bs-toggle="tab" data-bs-target="#maintenance-pane" type="button" role="tab"><i class="bi bi-gear-wide-connected me-2"></i>Predictive Maintenance</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'planning' %}active{% endif %}" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning-pane" type="button" role="tab"><i class="bi bi-graph-up-arrow me-2"></i>Planning & Optimization</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'quality' %}active{% endif %}" id="quality-tab" data-bs-toggle="tab" data-bs-target="#quality-pane" type="button" role="tab"><i class="bi bi-patch-check me-2"></i>Quality Control</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            
+            <div class="tab-pane fade {% if active_tab == 'maintenance' or not active_tab %}show active{% endif %}" id="maintenance-pane" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-5 col-md-12 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold"><i class="bi bi-activity me-2"></i> Analisis Status Mesin</div>
+                            <div class="card-body d-flex flex-column">
+                                <p class="card-text text-muted">Pilih mesin untuk melihat riwayat atau masukkan data sensor baru untuk dianalisis.</p>
+                                <form action="/show_history" method="post" class="mb-4 border-bottom pb-4">
+                                   <div class="input-group"><select class="form-select" name="id_mesin_history" required><option value="" disabled selected>-- Pilih mesin --</option>{% for mesin in daftar_mesin %}<option value="{{ mesin }}" {% if mesin == id_mesin_terpilih %}selected{% endif %}>{{ mesin }}</option>{% endfor %}</select><button type="submit" class="btn btn-primary">Lihat Riwayat</button></div>
+                                </form>
+                                 <form action="/predict_maintenance" method="post" class="mt-auto">
+                                    <div class="mb-3"><select class="form-select" id="id_mesin" name="id_mesin" required><option value="" disabled {% if not id_mesin_terpilih %}selected{% endif %}>-- Pilih mesin untuk dianalisis --</option>{% for mesin in daftar_mesin %}<option value="{{ mesin }}" {% if mesin == id_mesin_terpilih %}selected{% endif %}>{{ mesin }}</option>{% endfor %}</select></div>
+                                    <div class="row">
+                                         <div class="col-6 mb-2"><label class="form-label">Suhu (°C)</label><input type="number" class="form-control" name="suhu" step="any" required></div>
+                                         <div class="col-6 mb-2"><label class="form-label">Rotasi (RPM)</label><input type="number" class="form-control" name="rotasi" step="any" required></div>
+                                         <div class="col-6 mb-3"><label class="form-label">Vibrasi (mm/s)</label><input type="number" class="form-control" name="vibrasi" step="any" required></div>
+                                         <div class="col-6 mb-3"><label class="form-label">Jam Operasional</label><input type="number" class="form-control" name="jam_operasional" step="any" required></div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Analisis & Simpan Data</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7 col-md-12 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold"><i class="bi bi-clipboard2-data me-2"></i>Hasil Analisis</div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                            {% if hasil_maintenance %}
+                                <div class="alert alert-{{ hasil_maintenance.warna_alert }} text-center m-0 w-100" role="alert">
+                                    <h5 class="alert-heading">Status: {{ hasil_maintenance.urgensi }}</h5><hr>
+                                    <p class="mb-1">Prediksi Sisa Umur Pakai:</p><div class="result-value">{{ hasil_maintenance.sisa_jam }} Jam</div><hr>
+                                    <p class="mb-2"><strong>Rekomendasi:</strong> {{ hasil_maintenance.rekomendasi }}</p>
+                                    {% if hasil_maintenance.penyebab %}<div class="text-start mt-2 border-top pt-2"><small class="fw-bold">{{ hasil_maintenance.penyebab }}</small></div>{% endif %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Hasil analisis mesin akan muncul di sini.</p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if riwayat_maintenance and riwayat_maintenance.labels_riwayat %}<div class="row mt-4"><div class="col-12"><div class="card">
+                    <div class="card-header fw-bold"><i class="bi bi-clock-history me-2"></i>Grafik Riwayat Kesehatan untuk: {{ id_mesin_terpilih }}</div>
+                    <div class="card-body">
+                         {% if riwayat_maintenance.labels_riwayat|length > 1 %}<canvas id="historyChart"></canvas>
+                         {% else %}<p class="text-center text-muted">Butuh minimal 2 data riwayat untuk menampilkan grafik.</p>{% endif %}
+                    </div>
+                </div></div></div>{% endif %}
+            </div>
+
+            <div class="tab-pane fade {% if active_tab == 'planning' %}show active{% endif %}" id="planning-pane" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold"><i class="bi bi-bar-chart-line me-2"></i> Peramalan Permintaan</div>
+                            <div class="card-body d-flex flex-column">
+                                <p class="card-text text-muted">Atur level keyakinan & pengaruh promosi untuk melihat peramalan.</p>
+                                <form action="/predict_demand" method="post" class="mt-auto">
+                                    <div class="mb-3"><label for="keyakinan" class="form-label">Level Keyakinan: <span id="val_keyakinan">95</span>%</label><input type="range" class="form-range" min="50" max="99" id="keyakinan" name="keyakinan" value="95"></div>
+                                    <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" role="switch" id="promosi" name="promosi"><label class="form-check-label" for="promosi">Ada Kampanye Marketing?</label></div>
+                                    <button type="submit" class="btn btn-success w-100">Buat Peramalan</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold"><i class="bi bi-truck me-2"></i> Optimasi Rantai Pasok</div>
+                            <div class="card-body d-flex flex-column">
+                                <p class="card-text text-muted">Atur preferensi Anda untuk menemukan supplier terbaik.</p>
+                                <form action="/predict_supply_chain" method="post" class="mt-auto">
+                                    <div class="mb-3"><label class="form-label">Pentingnya Biaya: <span id="val_biaya">5</span></label><input type="range" class="form-range" min="1" max="10" id="bobot_biaya" name="bobot_biaya" value="5"></div>
+                                    <div class="mb-3"><label class="form-label">Pentingnya Waktu: <span id="val_waktu">5</span></label><input type="range" class="form-range" min="1" max="10" id="bobot_waktu" name="bobot_waktu" value="5"></div>
+                                    <div class="mb-3"><label class="form-label">Pentingnya Kualitas: <span id="val_kualitas">5</span></label><input type="range" class="form-range" min="1" max="10" id="bobot_kualitas" name="bobot_kualitas" value="5"></div>
+                                    <button type="submit" class="btn btn-warning w-100">Cari Peringkat Supplier</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold"><i class="bi bi-box-seam me-2"></i> Optimasi Inventaris</div>
+                            <div class="card-body d-flex flex-column">
+                                <p class="card-text text-muted">Masukkan parameter biaya untuk menghitung EOQ & ROP.</p>
+                                <form action="/optimize_inventory" method="post" class="mt-auto">
+                                    <div class="mb-2"><label class="form-label" style="font-size: 0.9em;">Biaya per Pesan (Rp)</label><input type="number" class="form-control" name="biaya_pesan" value="50000" required></div>
+                                    <div class="mb-2"><label class="form-label" style="font-size: 0.9em;">Biaya Simpan/Unit (Rp/Tahun)</label><input type="number" class="form-control" name="biaya_simpan" value="10000" required></div>
+                                    <div class="mb-2"><label class="form-label" style="font-size: 0.9em;">Waktu Tunggu (Hari)</label><input type="number" class="form-control" name="lead_time" value="7" required></div>
+                                    <div class="mb-3"><label class="form-label" style="font-size: 0.9em;">Stok Pengaman (Unit)</label><input type="number" class="form-control" name="safety_stock" value="50" required></div>
+                                    <button type="submit" class="btn btn-info w-100 text-white">Hitung Inventaris</button>
+                                </form>
+                                {% if hasil_eoq and hasil_rop %}<div class="alert alert-info mt-3 text-center" role="alert">
+                                   <p class="mb-1" style="font-size: 0.9em;"><strong>Jml Pesanan Optimal (EOQ):</strong></p><div class="result-value">{{ hasil_eoq }} Unit</div><hr>
+                                   <p class="mb-1" style="font-size: 0.9em;"><strong>Pesan Ulang Saat Stok (ROP):</strong></p><div class="result-value">{{ hasil_rop }} Unit</div>
+                                </div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if peringkat_supplier %}<div class="row mt-2"><div class="col-12"><div class="card"><div class="card-header fw-bold"><i class="bi bi-trophy me-2"></i>Tabel Peringkat Rekomendasi Supplier</div><div class="card-body"><div class="table-responsive"><table class="table table-striped table-hover"><thead><tr><th>#</th><th>Nama</th><th>Skor</th><th>Biaya</th><th>Waktu</th><th>Rating</th></tr></thead><tbody>{% for supplier in peringkat_supplier %}<tr class="{% if loop.first %}table-success fw-bold{% endif %}"><th scope="row">{{ loop.index }}</th><td>{{ supplier.nama_supplier }}</td><td>{{ "%.2f"|format(supplier.skor_rekomendasi) }}</td><td>{{ supplier.biaya_per_unit }}</td><td>{{ supplier.waktu_pengiriman_hari }}</td><td>{{ supplier.rating_kualitas }}</td></tr>{% endfor %}</tbody></table></div></div></div></div></div>{% endif %}
+                {% if labels_ramalan and data_ramalan %}<div class="row mt-4"><div class="col-12"><div class="card"><div class="card-header fw-bold"><i class="bi bi-graph-up me-2"></i>Grafik Peramalan Permintaan dg. Rentang Keyakinan {{ keyakinan_persen }}%</div><div class="card-body"><canvas id="demandChart"></canvas></div></div></div></div>{% endif %}
+            </div>
+
+            <div class="tab-pane fade {% if active_tab == 'quality' %}show active{% endif %}" id="quality-pane" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6 col-md-8">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold"><i class="bi bi-camera me-2"></i> Deteksi Cacat (Computer Vision)</div>
+                            <div class="card-body d-flex flex-column">
+                                <p class="card-text text-muted">Unggah gambar (kucing/anjing) untuk dianalisis kualitasnya oleh AI.</p>
+                                <p></p>
+                                <p class="card-text text-muted">(Saat ini hanya support gambar kucing dan anjing, untuk mesin saya belum mendapat data/fotonya)</p>
+                               
+                                <form action="/predict_defect" method="post" enctype="multipart/form-data" class="mt-auto">
+                                    <div class="mb-3"><label for="file" class="form-label">Pilih Gambar</label><input class="form-control" type="file" name="file" id="file" required></div>
+                                    <button type="submit" class="btn btn-dark w-100">Analisis Gambar</button>
+                                </form>
+                                {% if hasil_prediksi_defect %}
+                                <div class="alert alert-dark mt-3 text-center">
+                                    {% if gambar_hasil_defect %}<img src="{{ gambar_hasil_defect }}" class="img-fluid rounded mb-3" alt="Gambar Unggahan" style="max-height: 250px;">{% endif %}
+                                    <h5>{{ hasil_prediksi_defect }}</h5>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-muted py-4 mt-4">
+        <p>&copy; 2025 LukiAI.</p>
+        <p>Made with <i class="bi bi-heart-fill"></i> in Bandung</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Chart.js initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize demand chart if data is available
+            const ctxDemand = document.getElementById('demandChart');
+            if (ctxDemand && typeof demandChartData !== 'undefined') {
+                new Chart(ctxDemand, demandChartData);
+            }
+
+            // Initialize history chart if data is available
+            const ctxHistory = document.getElementById('historyChart');
+            if (ctxHistory && typeof historyChartData !== 'undefined') {
+                new Chart(ctxHistory, historyChartData);
+            }
+        });
+    </script>
+
+    <!-- Chart data will be injected here by Flask -->
+    <script>
+        // Default empty chart data objects
+        let demandChartData = null;
+        let historyChartData = null;
+
+        // Only add chart data if the variables are available
+        {% if labels_ramalan is defined and data_ramalan is defined %}
+        demandChartData = {
+            type: 'line',
+            data: {
+                labels: {{ (labels_historis + labels_ramalan) | tojson }},
+                datasets: [
+                    {
+                        label: 'Historis',
+                        data: {{ (data_historis + ([None] * data_ramalan|length)) | tojson }},
+                        borderColor: 'rgb(59, 130, 246)',
+                        tension: 0.1,
+                        fill: false
+                    },
+                    {
+                        label: 'Prediksi',
+                        data: {{ ([None] * data_historis|length + data_ramalan) | tojson }},
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderDash: [5, 5],
+                        tension: 0.1,
+                        fill: false
+                    },
+                    {
+                        label: 'Batas Bawah',
+                        data: {{ ([None] * data_historis|length + data_batas_bawah) | tojson }},
+                        fill: '+1',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 0.3)',
+                        pointRadius: 0,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Batas Atas',
+                        data: {{ ([None] * data_historis|length + data_batas_atas) | tojson }},
+                        fill: false,
+                        borderColor: 'rgba(16, 185, 129, 0.3)',
+                        pointRadius: 0,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        };
+        {% endif %}
+
+        {% if riwayat_maintenance is defined and riwayat_maintenance.labels_riwayat is defined and riwayat_maintenance.labels_riwayat|length > 1 %}
+        historyChartData = {
+            type: 'line',
+            data: {
+                labels: {{ riwayat_maintenance.labels_riwayat | tojson }},
+                datasets: [{
+                    label: 'Sisa Umur Pakai (Jam)',
+                    data: {{ riwayat_maintenance.data_riwayat | tojson }},
+                    fill: false,
+                    borderColor: 'rgb(59, 130, 246)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                animation: false
+            }
+        };
+        {% endif %}
+    </script>
+</body>
+</html>
