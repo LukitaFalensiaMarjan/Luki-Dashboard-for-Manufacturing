@@ -1,45 +1,19 @@
-# Dashboard AI Manufaktur
+# Luki Dashboard for Manufacturing
 
-Aplikasi web full-stack yang berfungsi sebagai pusat komando cerdas (Intelligent Command Center) untuk operasi manufaktur, menyediakan analisis dan rekomendasi berbasis AI secara real-time.
+A full-stack web application that serves as an Intelligent Command Center for manufacturing operations, providing real-time AI-driven analytics and recommendations.
 
-## Latar Belakang & Tujuan Proyek
-Tujuan proyek ini adalah untuk membangun sebuah platform terintegrasi yang menerapkan berbagai teknik Machine Learning dan Deep Learning untuk memecahkan masalah umum di dunia industri, mulai dari perawatan mesin hingga perencanaan bisnis. Aplikasi ini dirancang untuk menjadi portofolio yang menunjukkan kemampuan end-to-end dalam pengembangan produk AI, dari ide hingga deployment.
+[Try the App Here!](https://lukifm17.pythonanywhere.com/)**
 
-## Fitur Utama
-- **Perawatan Prediktif (Predictive Maintenance)**
-  - Memantau beberapa mesin secara terpisah.
-  - Menyimpan riwayat kesehatan mesin ke database MySQL.
-  - Memprediksi Sisa Umur Pakai (Remaining Useful Life - RUL) dalam jam.
-  - Memberikan klasifikasi urgensi (Normal, Waspada, Kritis) dan rekomendasi tindakan.
-  - Menampilkan faktor pemicu utama kerusakan menggunakan **Explainable AI (XAI)**.
+## Key Features
+- ** Predictive Maintenance (V5)**: Predicts remaining machine life, assigns urgency levels, explains trigger factors (XAI), and stores per-machine history in a MySQL database.
+- ** Demand Forecasting (V3)**: Forecasts sales using historical data, promotional effects, and a customizable confidence range.
+- ** Supply Chain Optimization (V2)**: Provides a supplier ranking table based on multi-criteria preferences.
+- ** Inventory Optimization**: Calculates the most efficient order quantity (EOQ) and reorder point (ROP).
+- ** Quality Control (Computer Vision)**: Using a Deep Learning model (Transfer Learning with MobileNetV2) efficiently deployed using TensorFlow Lite.
 
-- **Peramalan Permintaan (Demand Forecasting)**
-  - Menampilkan data penjualan historis berdampingan dengan peramalan masa depan.
-  - Mempertimbangkan input faktor eksternal seperti kampanye marketing.
-  - Menyajikan hasil dengan **Rentang Keyakinan (Confidence Interval)** yang dapat diatur (50%-99%).
-
-- **Optimasi Rantai Pasok (Supply Chain Optimization)**
-  - Menerima input preferensi pengguna (sliders) untuk biaya, waktu, dan kualitas.
-  - Menampilkan **tabel peringkat lengkap** semua supplier, diurutkan berdasarkan skor rekomendasi.
-
-- **Optimasi Inventaris (Inventory Optimization)**
-  - Menghitung **Economic Order Quantity (EOQ)** untuk menentukan jumlah pesanan paling efisien.
-  - Menghitung **Reorder Point (ROP)** untuk menentukan waktu pemesanan ulang.
-
-- **Kontrol Kualitas (Quality Control)**
-  - Menggunakan model **Computer Vision (Deep Learning)** untuk klasifikasi gambar.
-  - Memungkinkan pengguna mengunggah gambar produk untuk dianalisis secara real-time.
-  - Diimplementasikan menggunakan **TensorFlow Lite** untuk efisiensi di lingkungan server.
-
-## Tumpukan Teknologi (Tech Stack)
+## Tech Stack
 - **Backend**: Python, Flask
 - **Database**: MySQL
 - **AI/ML**: Scikit-learn, Pandas, NumPy, TensorFlow Lite, SciPy
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap, Chart.js
 - **Deployment**: PythonAnywhere, Git
-
-## Sorotan Proyek (Project Highlights)
-- **Integrasi 5 Model AI Berbeda**: Menunjukkan keluasan pemahaman dalam berbagai paradigma AI (Regresi, Klasifikasi, Optimasi, Deep Learning).
-- **Implementasi Fitur Lanjutan**: Menerapkan konsep canggih seperti XAI dan Confidence Interval.
-- **Arsitektur Full-Stack**: Menggabungkan backend, frontend, dan database menjadi satu aplikasi yang kohesif.
-- **Efisiensi Deployment**: Berhasil mengkonversi dan men-deploy model TensorFlow yang besar di lingkungan server dengan sumber daya terbatas menggunakan TFLite.
