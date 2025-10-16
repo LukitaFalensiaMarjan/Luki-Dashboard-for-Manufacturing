@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LukiAI Dashboard For Manufacturing</title>
+    <title>Luki Dashboard for Manufacturing</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="bi bi-robot me-2"></i>LukiAI Dashboard For Manufacturing
+                <i class="bi bi-robot me-2"></i>Luki Dashboard for Manufacturing
             </a>
         </div>
     </nav>
@@ -23,7 +23,7 @@
     <div class="container my-4">
         <div class="hero-section text-center rounded mb-5">
             <h1>Analisis Cerdas untuk Industri Manufaktur</h1>
-            <p class="lead text-muted">Memanfaatkan kekuatan AI untuk Predictive Maintenance, Demand Forecasting, Supply Chain, Inventory, & Quality Control.</p>
+            <p class="lead text-muted">Memanfaatkan Teknologi untuk Predictive Maintenance, Demand Forecasting, Supply Chain, Inventory, & Quality Control.</p>
         </div>
 
         <ul class="nav nav-tabs nav-fill mb-4" id="myTab" role="tablist">
@@ -39,7 +39,7 @@
         </ul>
 
         <div class="tab-content" id="myTabContent">
-            
+
             <div class="tab-pane fade {% if active_tab == 'maintenance' or not active_tab %}show active{% endif %}" id="maintenance-pane" role="tabpanel">
                 <div class="row">
                     <div class="col-lg-5 col-md-12 mb-4">
@@ -47,6 +47,7 @@
                             <div class="card-header fw-bold"><i class="bi bi-activity me-2"></i> Analisis Status Mesin</div>
                             <div class="card-body d-flex flex-column">
                                 <p class="card-text text-muted">Pilih mesin untuk melihat riwayat atau masukkan data sensor baru untuk dianalisis.</p>
+                                <p class="card-text text-muted">* saat ini masih perlu menginput secara manual belum bisa mengimplementasi secara real.</p>
                                 <form action="/show_history" method="post" class="mb-4 border-bottom pb-4">
                                    <div class="input-group"><select class="form-select" name="id_mesin_history" required><option value="" disabled selected>-- Pilih mesin --</option>{% for mesin in daftar_mesin %}<option value="{{ mesin }}" {% if mesin == id_mesin_terpilih %}selected{% endif %}>{{ mesin }}</option>{% endfor %}</select><button type="submit" class="btn btn-primary">Lihat Riwayat</button></div>
                                 </form>
@@ -149,11 +150,11 @@
                         <div class="card h-100">
                             <div class="card-header fw-bold"><i class="bi bi-camera me-2"></i> Deteksi Cacat (Computer Vision)</div>
                             <div class="card-body d-flex flex-column">
-                                <p class="card-text text-muted">Unggah gambar (kucing/anjing) untuk dianalisis kualitasnya oleh AI.</p>
-                                <p>* Kucing (Bagus), Anjing (Cacat)</p>
+                                <p class="card-text text-muted">Unggah gambar untuk dianalisis dan diprediksi kualitasnya.</p>
+                                <p class="card-text text-muted">* Output akan memberikan Prediksi : Kucing untuk Produk Bagus dan Prediksi : Anjing untuk Produk Cacat.</p>
                                 <p></p>
-                                <p class="card-text text-muted">(Saat ini hanya support gambar kucing dan anjing, untuk mesin saya belum mendapat data/fotonya)</p>
-                               
+                                <p class="card-text text-muted">Saat ini hanya support kucing dan anjing untuk implementasi realnya saya belum mendapat data/fotonya, juga perlu input secara manual, belum dapat memprediksi kecacatan suatu produksi secara real.</p>
+
                                 <form action="/predict_defect" method="post" enctype="multipart/form-data" class="mt-auto">
                                     <div class="mb-3"><label for="file" class="form-label">Pilih Gambar</label><input class="form-control" type="file" name="file" id="file" required></div>
                                     <button type="submit" class="btn btn-dark w-100">Analisis Gambar</button>

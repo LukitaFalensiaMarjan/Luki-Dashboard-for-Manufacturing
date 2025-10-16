@@ -10,35 +10,38 @@ import tflite_runtime.interpreter as tflite
 from PIL import Image
 import os
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# Specify the absolute path for the application
+# REPLACE 'lukifm17' WITH YOUR USERNAME
+BASE_DIR = "/home/lukifm17/mysite/"
 
-UPLOAD_FOLDER = 'static/uploads'
-upload_path_abs = f"/home/lukifm17/mysite/{UPLOAD_FOLDER}" # Change according to your path
-os.makedirs(upload_path_abs, exist_ok=True)
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
-path_ke_file = "Change according to your path/"
+# Configure upload folder with absolute path
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static/uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Load model
-model_maintenance = joblib.load(path_ke_file + 'model_prediksi_kerusakan.joblib')
-model_demand = joblib.load(path_ke_file + 'model_peramalan_permintaan.joblib')
-interpreter_defect = tflite.Interpreter(model_path=path_ke_file + 'model_deteksi_cacat.tflite')
+# Load models and data with absolute paths
+model_maintenance = joblib.load(os.path.join(BASE_DIR, 'model_prediksi_kerusakan.joblib'))
+model_demand = joblib.load(os.path.join(BASE_DIR, 'model_peramalan_permintaan.joblib'))
+interpreter_defect = tflite.Interpreter(model_path=os.path.join(BASE_DIR, 'model_deteksi_cacat.tflite'))
 interpreter_defect.allocate_tensors()
 input_details = interpreter_defect.get_input_details()
 output_details = interpreter_defect.get_output_details()
+df_supplier = pd.read_csv(os.path.join(BASE_DIR, 'data_supplier.csv'))
+df_penjualan = pd.read_csv(os.path.join(BASE_DIR, 'data_penjualan.csv'), parse_dates=['tanggal'])
 
-# Variabel and data
-db_config = { 
-    'host': 'Change according to your host', 
-    'user': 'Change according to your username',
-    'password': 'Change according to your password',                        
-    'database': 'Change according to your database name' 
+# Database configuration
+db_config = {
+    'host': 'Replace with your actual host',
+    'user': 'Replace with your actual username',
+    'password': 'Replace with your actual password', 
+    'database': 'Replace with your actual database name'
 }
-df_supplier = pd.read_csv(path_ke_file + 'data_supplier.csv')
-df_penjualan = pd.read_csv(path_ke_file + 'data_penjualan.csv', parse_dates=['tanggal'])
 daftar_mesin = ["Mesin Bubut A-01", "Mesin CNC B-02", "Pompa Air C-03"]
+
 defect_class_names = ['Kucing (Produk Bagus)', 'Anjing (Produk Cacat)']
 
-# --- Function init_db() ---
 def init_db():
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
@@ -141,20 +144,30 @@ def predict_defect():
     file = request.files['file']
     if file.filename == '':
         return render_template('index.html', daftar_mesin=daftar_mesin, hasil_prediksi_defect="File belum dipilih.", active_tab='quality')
+
     if file:
-        filepath = os.path.join(upload_path_abs, file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filepath)
-        img = Image.open(filepath).convert('RGB').resize((180, 180))
+
+        img = Image.open(filepath).convert('RGB').resize((224, 224))
         img_array = np.array(img, dtype=np.float32)
         img_array = np.expand_dims(img_array, 0)
-        img_array = img_array / 255.0
+
         interpreter_defect.set_tensor(input_details[0]['index'], img_array)
         interpreter_defect.invoke()
-        predictions = interpreter_defect.get_tensor(output_details[0]['index'])
-        score_exp = np.exp(predictions[0])
-        score = score_exp / np.sum(score_exp)
-        hasil = f"Prediksi: {defect_class_names[np.argmax(score)]} ({100 * np.max(score):.2f}%)"
+
+        prediction = interpreter_defect.get_tensor(output_details[0]['index'])[0][0]
+
+        if prediction > 0.5:
+            class_name = defect_class_names[1] # Anjing (Produk Cacat)
+            confidence = prediction * 100
+        else:
+            class_name = defect_class_names[0] # Kucing (Produk Bagus)
+            confidence = (1 - prediction) * 100
+
+        hasil = f"Prediksi: {class_name} ({confidence:.2f}%)"
         gambar_url = url_for('static', filename='uploads/' + file.filename)
+
         return render_template('index.html', daftar_mesin=daftar_mesin, hasil_prediksi_defect=hasil, gambar_hasil_defect=gambar_url, active_tab='quality')
 
 if __name__ == '__main__':
