@@ -1,77 +1,74 @@
 import tensorflow as tf
 import pathlib
-import os
 
-# Arahkan ke folder dataset lokal kita
+# 1. Data Preparation (unchanged)
+print("Mempersiapkan dataset...")
 data_dir = pathlib.Path('./dataset/')
-
-# Hitung jumlah gambar untuk memastikan semuanya benar
-image_count = len(list(data_dir.glob('*/*.jpg')))
-print(f"Total gambar ditemukan: {image_count}")
-
-# Siapkan parameter untuk memuat data
 batch_size = 32
 img_height = 180
 img_width = 180
-
-# Muat data pelatihan (80% dari total data)
-train_ds = tf.keras.utils.image_dataset_from_directory(
-  data_dir,
-  validation_split=0.2, # Sisihkan 20% untuk validasi
-  subset="training",
-  seed=123,
-  image_size=(img_height, img_width),
-  batch_size=batch_size)
-
-# Muat data validasi (20% yang disisihkan tadi)
-val_ds = tf.keras.utils.image_dataset_from_directory(
-  data_dir,
-  validation_split=0.2,
-  subset="validation",
-  seed=123,
-  image_size=(img_height, img_width),
-  batch_size=batch_size)
-
+train_ds = tf.keras.utils.image_dataset_from_directory(data_dir, validation_split=0.2, subset="training", seed=123, image_size=(img_height, img_width), batch_size=batch_size)
+val_ds = tf.keras.utils.image_dataset_from_directory(data_dir, validation_split=0.2, subset="validation", seed=123, image_size=(img_height, img_width), batch_size=batch_size)
 class_names = train_ds.class_names
-print("Kelas yang ditemukan:", class_names)
+print(f"Kelas yang ditemukan: {class_names}")
 
-# Optimalkan performa pemuatan data
 AUTOTUNE = tf.data.AUTOTUNE
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-# Bangun Model AI (Convolutional Neural Network)
-model = tf.keras.Sequential([
-  tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
-  tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
-  tf.keras.layers.MaxPooling2D(),
-  tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
-  tf.keras.layers.MaxPooling2D(),
-  tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
-  tf.keras.layers.MaxPooling2D(),
-  tf.keras.layers.Dropout(0.2), # Mencegah overfitting
-  tf.keras.layers.Flatten(),
-  tf.keras.layers.Dense(128, activation='relu'),
-  tf.keras.layers.Dense(len(class_names))
-])
+# 2. Model Architecture
+print("Membangun arsitektur model...")
+data_augmentation = tf.keras.Sequential([tf.keras.layers.RandomFlip('horizontal'), tf.keras.layers.RandomRotation(0.1), tf.keras.layers.RandomZoom(0.1),])
 
-# Kompilasi Model
+# Download MobileNetV2 model
+base_model = tf.keras.applications.MobileNetV2(input_shape=(img_height, img_width, 3), include_top=False, weights='imagenet')
+
+# Freeze the base model
+base_model.trainable = False
+
+inputs = tf.keras.Input(shape=(img_height, img_width, 3))
+x = data_augmentation(inputs)
+x = tf.keras.applications.mobilenet_v2.preprocess_input(x)
+x = base_model(x, training=False)
+x = tf.keras.layers.GlobalAveragePooling2D()(x)
+x = tf.keras.layers.Dropout(0.2)(x)
+outputs = tf.keras.layers.Dense(len(class_names))(x)
+model = tf.keras.Model(inputs, outputs)
+
+# 3. Compile and Train the Model (Initial Training)
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-# Tampilkan arsitektur model
-model.summary()
+initial_epochs = 10
+print(f"\nMemulai Pelatihan Awal selama {initial_epochs} epoch...")
+history = model.fit(train_ds, validation_data=val_ds, epochs=initial_epochs)
 
-# Latih Model
-print("\nMemulai proses pelatihan model Computer Vision...")
-epochs = 15
-history = model.fit(
-  train_ds,
-  validation_data=val_ds,
-  epochs=epochs
-)
+# --- FINE-TUNING ---
 
-# Simpan Model yang Sudah Dilatih
+# 4. Unfreeze some layers in the base model
+base_model.trainable = True
+fine_tune_at = 100 
+for layer in base_model.layers[:fine_tune_at]:
+    layer.trainable = False
+
+# 5. Recompile the model with a lower learning rate
+model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              optimizer=tf.keras.optimizers.RMSprop(learning_rate=1e-5),
+              metrics=['accuracy'])
+
+model.summary() # Optional: Print model summary to see trainable layers
+
+# 6. Continue Training (Fine-Tuning)
+fine_tune_epochs = 10
+total_epochs = initial_epochs + fine_tune_epochs
+
+print(f"\nMemulai Proses Fine-Tuning selama {fine_tune_epochs} epoch...")
+history_fine = model.fit(train_ds,
+                         epochs=total_epochs,
+                         initial_epoch=history.epoch[-1],
+                         validation_data=val_ds)
+
+# 7. Save the fine-tuned model
 model.save('model_deteksi_cacat.h5')
-print("\nModel Computer Vision berhasil dilatih dan disimpan sebagai 'model_deteksi_cacat.h5'")
+print("\nThe Computer Vision model has been successfully trained and saved.")

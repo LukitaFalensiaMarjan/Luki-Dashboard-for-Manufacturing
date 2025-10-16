@@ -10,21 +10,15 @@ import tflite_runtime.interpreter as tflite
 from PIL import Image
 import os
 
-# INI BARIS KUNCI YANG MEMPERBAIKI ERROR ANDA
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
-# Konfigurasi folder untuk upload gambar
 UPLOAD_FOLDER = 'static/uploads'
-# GANTI 'lukifm17' DENGAN USERNAME ANDA
-upload_path_abs = f"/home/lukifm17/mysite/{UPLOAD_FOLDER}"
+upload_path_abs = f"/home/lukifm17/mysite/{UPLOAD_FOLDER}" # Change according to your path
 os.makedirs(upload_path_abs, exist_ok=True)
 
+path_ke_file = "Change according to your path/"
 
-# --- Variabel Path Absolut untuk Server ---
-# GANTI 'lukifm17' DENGAN USERNAME ANDA
-path_ke_file = "/home/lukifm17/mysite/"
-
-# --- Muat SEMUA Model AI saat aplikasi dimulai ---
+# Load model
 model_maintenance = joblib.load(path_ke_file + 'model_prediksi_kerusakan.joblib')
 model_demand = joblib.load(path_ke_file + 'model_peramalan_permintaan.joblib')
 interpreter_defect = tflite.Interpreter(model_path=path_ke_file + 'model_deteksi_cacat.tflite')
@@ -32,19 +26,19 @@ interpreter_defect.allocate_tensors()
 input_details = interpreter_defect.get_input_details()
 output_details = interpreter_defect.get_output_details()
 
-# --- Variabel dan Data lain ---
-db_config = {
-    'host': 'lukifm17.mysql.pythonanywhere-services.com',
-    'user': 'lukifm17',
-    'password': 'Putri11032025', # ISI DENGAN PASSWORD ANDA SENDIRI:
-    'database': 'lukifm17$pabrik_ai'
+# Variabel and data
+db_config = { 
+    'host': 'Change according to your host', 
+    'user': 'Change according to your username',
+    'password': 'Change according to your password',                        
+    'database': 'Change according to your database name' 
 }
 df_supplier = pd.read_csv(path_ke_file + 'data_supplier.csv')
 df_penjualan = pd.read_csv(path_ke_file + 'data_penjualan.csv', parse_dates=['tanggal'])
 daftar_mesin = ["Mesin Bubut A-01", "Mesin CNC B-02", "Pompa Air C-03"]
 defect_class_names = ['Kucing (Produk Bagus)', 'Anjing (Produk Cacat)']
 
-# --- Fungsi init_db() ---
+# --- Function init_db() ---
 def init_db():
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
@@ -58,7 +52,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# --- (Sisa kode di bawah ini sudah benar dan tidak perlu diubah) ---
 @app.route('/')
 def home():
     return render_template('index.html', daftar_mesin=daftar_mesin, active_tab='maintenance')

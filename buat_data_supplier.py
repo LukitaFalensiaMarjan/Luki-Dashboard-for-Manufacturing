@@ -1,6 +1,6 @@
 import pandas as pd
 
-# Buat data fiktif untuk beberapa supplier
+# Create fictitious data for multiple suppliers
 data = {
     'nama_supplier': [
         'Supplier Cepat Express',
@@ -9,9 +9,9 @@ data = {
         'Mitra Andal Sejahtera',
         'Sumber Berkah Nusantara'
     ],
-    'biaya_per_unit': [120, 85, 150, 110, 95], # Semakin rendah semakin baik
-    'waktu_pengiriman_hari': [2, 7, 3, 4, 6],   # Semakin rendah semakin baik
-    'rating_kualitas': [4.5, 3.0, 5.0, 4.0, 3.5] # Semakin tinggi semakin baik (skala 1-5)
+    'biaya_per_unit': [120, 85, 150, 110, 95], # The lower the better
+    'waktu_pengiriman_hari': [2, 7, 3, 4, 6],   # The lower the better
+    'rating_kualitas': [4.5, 3.0, 5.0, 4.0, 3.5] # The higher the better
 }
 
 df = pd.DataFrame(data)

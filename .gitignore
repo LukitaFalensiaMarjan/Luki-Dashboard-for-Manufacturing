@@ -1,10 +1,14 @@
-# Python cache
+# Very large dataset folders
+dataset/
+dataset_produk/
+
+# Model files
+*.h5
+*.keras
+
+# Python cache files
 __pycache__/
 *.pyc
 
 # Environment
 .env
-
-# Database file (jika menggunakan sqlite)
-*.db
-*.sqlite3

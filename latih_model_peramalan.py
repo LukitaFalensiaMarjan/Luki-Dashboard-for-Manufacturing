@@ -11,15 +11,14 @@ df['hari'] = df['tanggal'].dt.day
 df['hari_dalam_seminggu'] = df['tanggal'].dt.dayofweek
 df['hari_dalam_tahun'] = df['tanggal'].dt.dayofyear
 
-# --- PERUBAHAN: Tambahkan 'ada_promosi' sebagai fitur untuk dipelajari ---
+# --- V2: Include Promotion Feature ---
 X = df[['tahun', 'bulan', 'hari', 'hari_dalam_seminggu', 'hari_dalam_tahun', 'ada_promosi']]
 y = df['jumlah_penjualan']
 
-# Latih model
+# Train the model
 model = RandomForestRegressor(n_estimators=100, random_state=42)
 model.fit(X, y)
 
-# Simpan model
+# Save the trained model
 joblib.dump(model, 'model_peramalan_permintaan.joblib')
-
-print("Model Peramalan Permintaan V2 (dengan promosi) berhasil dilatih ulang.")
+print("Demand Forecasting Model V2 was successfully trained.")

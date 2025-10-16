@@ -1,30 +1,29 @@
 import pandas as pd
 import numpy as np
 
-# Buat rentang tanggal selama 3 tahun
+# Create a date range of 3 years (2022-2024)
 dates = pd.date_range(start='2022-01-01', end='2024-12-31', freq='D')
 
-# Buat tren penjualan yang meningkat
+# Create an increasing sales trend
 trend = np.linspace(start=100, stop=300, num=len(dates))
 
-# Buat pola musiman (penjualan lebih tinggi di akhir pekan)
+# Add weekly seasonality (higher sales on weekends)
 seasonality = 1 + (dates.dayofweek // 5) * 0.5
 
-# --- BAGIAN BARU: Tambahkan faktor promosi ---
-# Anggap ada promosi acak sekitar 5% dari total hari
-np.random.seed(42) # Agar hasil acaknya selalu sama
+# Add promotional events (randomly scattered)
+np.random.seed(42) # For reproducibility
 ada_promosi = np.random.choice([0, 1], size=len(dates), p=[0.95, 0.05])
-# Efek promosi: menaikkan penjualan sebanyak 150 unit
+# Promotional effect: increase sales by 150 units on promo days
 efek_promosi = ada_promosi * 150 
 
-# Tambahkan noise/acak
+# Add random noise
 noise = np.random.normal(loc=0, scale=20, size=len(dates))
 
-# Gabungkan semua komponen
+# Calculate final sales numbers
 jumlah_penjualan = trend * seasonality + efek_promosi + noise
 jumlah_penjualan = np.maximum(jumlah_penjualan, 20).astype(int)
 
-# Buat DataFrame
+# create DataFrame and save to CSV
 df = pd.DataFrame({
     'tanggal': dates,
     'ada_promosi': ada_promosi, # Kolom baru
@@ -32,4 +31,4 @@ df = pd.DataFrame({
 })
 
 df.to_csv('data_penjualan.csv', index=False)
-print(f"File 'data_penjualan.csv' versi upgrade (dengan promosi) berhasil dibuat.")
+print(f"The file 'data_penjualan.csv' was successfully created.")

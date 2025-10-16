@@ -1,7 +1,7 @@
-// Menunggu hingga seluruh halaman dimuat sebelum menjalankan script
+// Wait until the entire page is loaded before running the script
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Logika untuk slider Supply Chain
+    // Logic for Supply Chain slider
     const bobotBiayaSlider = document.getElementById('bobot_biaya');
     const valBiayaSpan = document.getElementById('val_biaya');
     if (bobotBiayaSlider && valBiayaSpan) {
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Logika untuk slider Demand Forecasting
+    // Logic for Risk Assessment slider
     const keyakinanSlider = document.getElementById('keyakinan');
     const valKeyakinanSpan = document.getElementById('val_keyakinan');
     if (keyakinanSlider && valKeyakinanSpan) {
